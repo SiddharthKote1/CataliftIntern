@@ -1,9 +1,9 @@
 package com.example.cataliftintern
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.MediaStore
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -14,8 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AddBox
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import androidx.core.net.toUri
 
@@ -39,26 +41,48 @@ import androidx.core.net.toUri
 fun CataPage() {
     var search by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImagePickerDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var showImagePickerDialog by remember { mutableStateOf(false)}
 
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-        bitmap?.let {
-            val uri = MediaStore.Images.Media.insertImage(
-                context.contentResolver,
-                it,
-                "profile",
-                null
-            ).toUri()
-            imageUri = uri
+
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+            bitmap?.let {
+                val uri = MediaStore.Images.Media.insertImage(
+                    context.contentResolver,
+                    it,
+                    "profile_${System.currentTimeMillis()}",
+                    null
+                )?.toUri()
+                if (uri != null) {
+                    imageUri = uri
+                }
+            }
+        }
+    // Permission request launcher
+    var cameraPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        cameraPermissionGranted = isGranted
+        if (isGranted) {
+            cameraLauncher.launch(null)
         }
     }
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
-            imageUri = uri
+
+
+    val galleryLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                imageUri = uri
+            }
         }
-    }
 
     Scaffold(
         topBar = {
@@ -150,6 +174,7 @@ fun CataPage() {
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(onClick = {
+                        showImagePickerDialog = true
                     }) {
                         Icon(
                             imageVector = Icons.Outlined.AddBox,
@@ -169,7 +194,7 @@ fun CataPage() {
                         modifier = Modifier
                             .size(48.dp)
                             .clickable {
-                                showImagePickerDialog=true
+                                showImagePickerDialog = true
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -179,8 +204,8 @@ fun CataPage() {
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier
                                     .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Gray, shape = CircleShape),
+                                    .background(Color.Gray, shape = CircleShape)
+                                    .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -189,7 +214,6 @@ fun CataPage() {
                                 contentDescription = null,
                                 tint = Color.Gray,
                                 modifier = Modifier.size(48.dp)
-                                    .clip(CircleShape)
                             )
                         }
                     }
@@ -210,28 +234,60 @@ fun CataPage() {
                     Icon(Icons.Default.Home, contentDescription = null)
                 }
             }
-        }
-        if (showImagePickerDialog) {
-            AlertDialog(
-                onDismissRequest = { showImagePickerDialog = false },
-                title = { Text("Select Image Source") },
-                text = { Text("Choose an option to set your profile picture") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showImagePickerDialog = false
-                    }) {
-                        Text("Take Photo")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showImagePickerDialog = false
-                        galleryLauncher.launch("image/*")
-                    }) {
-                        Text("Choose from Gallery")
-                    }
-                }
-            )
+
+            if (showImagePickerDialog) {
+                AlertDialog(
+                    onDismissRequest = { showImagePickerDialog = false },
+                    title = { Text("Select Image Source") },
+                    text = {
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showImagePickerDialog = false
+                                        cameraLauncher.launch(null)
+                                    }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically // <-- Added comma before this line
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = "Camera",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text("Camera", fontWeight = FontWeight.Medium, fontSize = 18.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showImagePickerDialog = false
+                                        galleryLauncher.launch("image/*")
+                                    }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Image,
+                                    contentDescription = "Gallery",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text("Gallery", fontWeight = FontWeight.Medium, fontSize = 18.sp)
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {}
+                )
+            }
         }
     }
 }
@@ -241,3 +297,4 @@ fun CataPage() {
 fun CataPagePreview() {
     CataPage()
 }
+
