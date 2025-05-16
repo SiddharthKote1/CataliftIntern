@@ -6,18 +6,24 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CollectionsBookmark
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material3.*
@@ -28,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -141,7 +148,41 @@ fun CataPage() {
                     containerColor = Color(0xFF000066)
                 )
             )
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF000066))
+                    .height(60.dp)
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.Home,
+                        contentDescription = "Home", tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.Explore,
+                        contentDescription = "Search", tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.Book,
+                        contentDescription = "Profile", tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
         }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -231,7 +272,7 @@ fun CataPage() {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    Icon(Icons.Default.Home, contentDescription = null)
+                    Icon(Icons.Default.PersonAdd, contentDescription = null)
                 }
             }
 
@@ -288,8 +329,26 @@ fun CataPage() {
                     dismissButton = {}
                 )
             }
+
+            //Things to do now
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("The Briggs–Rauscher Reaction: A Mesmerizing Chemical Dance 🌈")
+            Spacer(modifier = Modifier.height(25.dp))
+            Text(
+                "This captivating process uses hydrogen peroxide," +
+                        " potassium iodate, malonic acid, manganese sulfate, and starch.")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Iodine and iodate ions interact to form compounds that shift the solution’s color, while starch amplifies the blue color before it breaks down and starts again.💡")
+            Spacer(modifier=Modifier.height(8.dp))
+            Text("Follow @Science for more", color = Color.Blue)
+            Spacer(modifier = Modifier.height(12.dp))
+            Image(
+                painterResource(id=R.drawable.isd),
+                contentDescription = null,
+                modifier=Modifier.fillMaxWidth())
         }
     }
+
 }
 
 @Preview(showBackground = true)
