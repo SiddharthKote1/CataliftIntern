@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material3.*
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,9 +56,12 @@ fun CataPage() {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
     var isLiked by remember { mutableStateOf(false) }
-    var likeCount by remember { mutableStateOf(100) }
+    var likeCount by remember { mutableIntStateOf(100) }
     var isComment by remember { mutableStateOf(false) }
-    var doComment by remember { mutableStateOf(1) }
+    var doComment by remember { mutableIntStateOf(1) }
+    var commentText by remember { mutableStateOf("") }
+    var comments by remember { mutableStateOf(mutableListOf<String>()) }
+    var showImagePickerDialog2 by remember{mutableStateOf(false)}
     val context = LocalContext.current
 
 
@@ -425,7 +429,9 @@ fun CataPage() {
                         )
                     }
 
-                    IconButton(onClick={}){
+                    IconButton(onClick={
+                        showImagePickerDialog2=true
+                    }){
                         Icon(imageVector = Icons.Default.AddComment,
                             contentDescription = null)
                     }
@@ -434,6 +440,47 @@ fun CataPage() {
                             contentDescription = null)
                     }
                 }
+
+                if (showImagePickerDialog2) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showImagePickerDialog2 = false
+                            commentText = ""
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    if (commentText.isNotBlank()) {
+                                        comments.add(commentText.trim())
+                                        commentText = ""
+                                        showImagePickerDialog2 = false
+                                        doComment = comments.size  // update comment count
+                                    }
+                                }
+                            ) {
+                                Text("Submit")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    showImagePickerDialog2 = false
+                                    commentText = ""
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+                        },
+                        text = {
+                            OutlinedTextField(
+                                value = commentText,
+                                onValueChange = { commentText = it },
+                                label = { Text("Enter your comment") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    )
+            }
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
